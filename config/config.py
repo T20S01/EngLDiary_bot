@@ -1,4 +1,5 @@
 DEFAULT_NICKNAME = "{DiscordJockey}"
+DATABASE_FILE = "./database/diary_data.db"
 
 STARTUP_MESSAGE = "Starting Bot..."
 STARTUP_COMPLETE_MESSAGE = "Startup Complete"

@@ -1,11 +1,12 @@
 import discord
 from discord.ext import commands
+import datetime
+import re
 from config import config
-from diary_bot.db_app import connect_database, create_table, add_content, select_contents
+import diary_bot.db_app as dbapp
 
-database_file = "./database/diary_data.db"
-conn = connect_database(database_file)
-create_table(conn)
+conn = dbapp.connect_database(config.DATABASE_FILE)
+dbapp.create_table(conn)
 
 
 def get_image_url_in_ctx(tem_context):
@@ -51,35 +52,115 @@ class DailyClient(commands.Cog):
         _guild = str(ctx.guild)
         _image_url = str(get_image_url_in_ctx(ctx))
 
-        content = (_id, _user, _message, _datetime,
+        # 取得したdatetimeを日本時間へ変換
+        tz = datetime.timezone(datetime.timedelta(hours=9))
+        _datetime_japan = _datetime.astimezone(tz)
+
+        content = (_id, _user, _message, _datetime_japan,
                    _channel, _guild, _image_url)
-        content_id = add_content(conn, content)
+        content_id = dbapp.add_content(conn, content)
         print(f'Created a content with the id {content_id}')
 
         await ctx.send("保存しました")
 
-    @commands.command(name='input', description=config.HELP_NEKO_LONG, help=config.HELP_NEKO_SHORT)
-    async def diary(self, ctx, *args):
-        # Get the interaction information
-        _id = ctx.message.id
-        _type = ctx.message.type
-        _user = ctx.author
-        _message = ' '.join(args)
-        _datetime = ctx.message.created_at
-        _channel = ctx.channel
-        _guild = ctx.guild
-        _image_url = get_image_url_in_ctx(ctx)
-
-        # Print the interaction information
-        print(f"Interaction ID: {_id, type(_id)}")
-        print(f"Interaction Type: {_type, type(_type)}")
-        print(f"User: {_user, type(_user)}")
-        print(f"Data: {_message, type(_message)}")
-        print(f"Datetime:{_datetime, type(_datetime)}")
-        print(f"Channel: {_channel, type(_channel)}")
-        print(f"Guild: {_guild, type(_guild)}")
-        print(f"Image_url: {_image_url, type(_image_url)}")
-
-    @commands.command(name='showme')
+    # これまでに登録された日記の要素をすべて表示する
+    @commands.command(name='debug_showme')
     async def show_contents(self, ctx):
-        select_contents(conn)
+        _rows = dbapp.select_all_contents(conn)
+        for _row in _rows:
+            print(_row)
+
+    # 入力された文字が含まれる文章を探す
+    @commands.command(name='fl')
+    async def find_message_from_letters(self, ctx, *args):
+        find_letters = str(' '.join(args))
+        _rows = dbapp.select_all_like_letters(conn, find_letters)
+
+        if bool(_rows) is False:
+            print(f"{find_letters}という文字を含んだ日記は見つかりません。")
+            await ctx.send(f"{find_letters}という文字を含んだ日記は見つかりません。")
+        else:
+            for _row in _rows:
+                # messageのみ取得して表示
+                print(_row[2])
+                await ctx.send(_row[2])
+
+    # 入力された単語が含まれる文章を探す
+    @commands.command(name='fw')
+    async def find_message_from_word(self, ctx, *args):
+        find_word = str(' '.join(args))
+        _rows = dbapp.select_all_like_word(conn, find_word)
+        if bool(_rows) is False:
+            print(f"{find_word}という単語を含んだ日記は見つかりません。")
+            await ctx.send(f"{find_word}という単語を含んだ日記は見つかりません。")
+        else:
+            for _row in _rows:
+                # messageのみ取得して表示
+                print(_row[2])
+                await ctx.send(_row[2])
+
+    # 入力された日に登録された日記を探す
+    @commands.command(name='fd')
+    async def find_message_from_date(self, ctx, *args):
+        find_date = str(' '.join(args))
+        # find_dateが検索できる形式かどうか確認する
+        if not re.search(r"\A\d{4}-\d{2}-\d{2}\Z", find_date):
+            await ctx.send("「/fd yyyy-mm-dd」のような形式で入力してください")
+        else:
+            _rows = dbapp.select_all_where_date(conn, find_date)
+            if bool(_rows) is False:
+                print(f"{find_date}に書いた日記はありません。")
+                await ctx.send(f"{find_date}に書いた日記はありません。")
+            else:
+                for _row in _rows:
+
+                    # messageのみ取得して表示
+                    print(_row[2])
+                    await ctx.send(_row[2])
+
+    # 入力された時間内に登録された日記を探す
+    @commands.command(name='ft')
+    async def find_message_from_time(self, ctx, *args):
+        find_time = str(' '.join(args))
+
+        # find_timeが検索できる形式かどうか確認する
+        if not re.search(r"\A\d{2}:\d{2}-\d{2}:\d{2}\Z", find_time):
+
+            # find_timeが無効な形式の場合
+            await ctx.send("「/ft hh:mm-hh:mm」のような形式で入力してください")
+        else:
+            start_time, end_time = find_time.split('-')
+
+            # start_timeとend_timeを比較
+            if datetime.datetime.strptime(start_time, '%H:%M').time() <= datetime.datetime.strptime(end_time, '%H:%M').time():
+
+                print("同じ日")
+
+                # start_timeとend_timeが同じ日の場合
+                _rows = dbapp.select_all_where_time_same_day(
+                    conn,
+                    (start_time, end_time)
+                )
+            else:
+
+                print("別の日")
+
+                # start_timeとend_timeが別の日の場合
+                _rows = dbapp.select_all_where_time_different_day(
+                    conn,
+                    (start_time, end_time)
+                )
+
+            # 出力が空かどうか確認する
+            if bool(_rows) is False:
+
+                # 出力がない場合
+                await ctx.send(f"{find_time}の間に書いた日記はありません。")
+            else:
+
+                # 出力がある場合
+                for _row in _rows:
+
+                    # messageのみ取得して表示
+                    print(_row[2])
+                    await ctx.send(_row[2])
