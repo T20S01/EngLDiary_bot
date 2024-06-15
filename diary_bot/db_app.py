@@ -1,10 +1,7 @@
 from config import sql_statements
-
 import sqlite3
 
-# SQLiteのdbがなければ作成し、そのまま接続する
-
-
+# SQLiteのdairy_databaseがなければ作成し、そのまま接続する
 def connect_database(db_file):
     """ create a database connection to an SQLite database """
     conn = None
@@ -15,9 +12,7 @@ def connect_database(db_file):
         print(e)
     return conn
 
-# SQLiteのdairy_databaseがなければ作成し、そのまま接続する
-
-
+# SQLiteのdairy_databaseにdairy_tableがなければ作成し、そのまま接続する
 def create_table(conn):
     try:
         cursor = conn.cursor()
@@ -26,8 +21,6 @@ def create_table(conn):
         print(e)
 
 # SQLiteのdairy_databaseにcontentを追加する
-
-
 def add_content(conn, content):
     try:
         cursor = conn.cursor()
@@ -38,8 +31,6 @@ def add_content(conn, content):
     return cursor.lastrowid
 
 # SQLiteでSELECT文を実行する基を作る
-
-
 def exeute_select_in_dairy_dababase(conn, TEM_QUERY, TEM_ARGUMENT=None):
     try:
         cursor = conn.cursor()
@@ -53,8 +44,6 @@ def exeute_select_in_dairy_dababase(conn, TEM_QUERY, TEM_ARGUMENT=None):
         return None
 
 # SQLiteのdairy_databaseからすべての要素をselectする
-
-
 def select_all_contents(conn):
     return exeute_select_in_dairy_dababase(
         conn,
@@ -62,12 +51,17 @@ def select_all_contents(conn):
     )
 
 # SQLiteのdairy_databaseからmessage列のすべての要素をselectする
-
-
 def select_all_messages(conn):
     return exeute_select_in_dairy_dababase(
         conn,
         sql_statements.SELECT_ALL_MESSAGE
+    )
+
+# SQLiteのdairy_databaseからmessage, create_at列のすべての要素をselectする
+def select_all_messages_create_at(conn):
+    return exeute_select_in_dairy_dababase(
+        conn,
+        sql_statements.SELECT_ALL_MESSAGE_CREATE_AT
     )
 
 
@@ -79,7 +73,6 @@ def select_all_like_letters(conn, find_letters: str):
         ('%'+find_letters+'%',)
     )
 
-
 # SQLiteのdairy_databaseからfind_wordがmessagegに含まれるすべての要素をselectする
 def select_all_like_word(conn, find_word: str):
     return exeute_select_in_dairy_dababase(
@@ -89,28 +82,9 @@ def select_all_like_word(conn, find_word: str):
     )
 
 # SQLiteのdairy_databaseからfind_dateがcreate_atに含まれるすべての要素をselectする
-
-
 def select_all_where_date(conn, find_date: str):
     return exeute_select_in_dairy_dababase(
         conn,
         sql_statements.SELECT_ALL_WHERE_DATE,
         (find_date,)
-    )
-
-# SQLiteのdairy_databaseからfind_time内にcreate_atが含まれるすべての要素をselectする
-# ただし、時間が日を跨ぐ場合とそうでない場合は別の関数を呼び出す
-
-def select_all_where_time_same_day(conn, find_time: tuple):
-    return exeute_select_in_dairy_dababase(
-        conn,
-        sql_statements.SELECT_ALL_BETWEEN_TIME_SAME_DAY,
-        find_time
-    )
-
-def select_all_where_time_different_day(conn, find_time: tuple):
-    return exeute_select_in_dairy_dababase(
-        conn,
-        sql_statements.SELECT_ALL_BETWEEN_TIME_DIFFERENT_DAYS,
-        find_time
     )

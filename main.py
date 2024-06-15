@@ -14,7 +14,6 @@ from config.config import *
 logger = logging.getLogger('discord')
 logger.setLevel(logging.DEBUG)
 logging.getLogger('discord.http').setLevel(logging.INFO)
-
 handler = logging.handlers.RotatingFileHandler(
     filename='discord.log',
     encoding='utf-8',
@@ -34,13 +33,12 @@ intents = discord.Intents.all()
 bot = commands.Bot(command_prefix='/', intents=intents)
 
 # 起動時に動作する処理
-
-
 @bot.event
 async def on_ready():
     print(STARTUP_MESSAGE)
     bot.add_cog(DailyClient(bot))
     await bot.change_presence(status=discord.Status.online, activity=discord.Game(name=" diary, type /help "))
+
     # 起動したらターミナルにログイン通知が表示される
     print(f"{bot.user}がログインしました")
     print(STARTUP_COMPLETE_MESSAGE)
