@@ -26,4 +26,4 @@ discord botを作成するテンプレートプロジェクトです。
 
 ## 開発ツール
 - vscode
-- github codespace または remote conteiner(docker)
+- github codespace
