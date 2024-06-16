@@ -38,18 +38,18 @@ bot = commands.Bot(command_prefix='/', intents=intents)
 @bot.event
 async def on_ready():
     try:
+        # 起動処理開始
+        print(STARTUP_MESSAGE)
         logger.info(STARTUP_MESSAGE)
         bot.add_cog(DailyClient(bot))
         await bot.change_presence(status=discord.Status.online, activity=discord.Game(name=" diary, type /help "))
 
-        # 起動したらターミナルにログイン通知が表示される
-        print(f"{bot.user}がログインしました")
-        logger.info(STARTUP_COMPLETE_MESSAGE)
     except:
         logger.error(BOT_CONFIG_ERROR_MESSAGE)
 
 # Botの起動とDiscordサーバーへの接続
 try:
+    # 起動したらターミナルにログイン通知が表示される
     bot.run(env.BOT_TOKEN)
 except:
     logger.error(BOT_RUNNING_ERROR_MESSAGE)

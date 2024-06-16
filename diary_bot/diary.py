@@ -14,6 +14,8 @@ dbapp.create_table(conn)
 logger.info(CONNECT_DATABASE_AND_TABLE)
 
 # botの操作を記述する
+
+
 class DailyClient(commands.Cog):
     """
     A collection of the commands related to diary.
@@ -24,6 +26,9 @@ class DailyClient(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+        print(f"{bot.user}がログインしました")
+        logger.info(STARTUP_COMPLETE_MESSAGE)
+        print(STARTUP_COMPLETE_MESSAGE)
 
     # 猫の鳴き声を出力する（debug and おまけ）
     @commands.command(name='neko', description=HELP_NEKO_LONG, help=HELP_NEKO_SHORT)
@@ -69,7 +74,8 @@ class DailyClient(commands.Cog):
             _rows = dbapp.select_all_contents(conn)
             for _row in _rows:
                 print(_row)
-                await ctx.send(_row)
+                # チャンネルにはmessageのみ送信
+                await ctx.send(_row[2])
         except:
             logger.error(SHOW_CONTENTS_ERROR_MESSAGE)
 
@@ -206,6 +212,8 @@ class DailyClient(commands.Cog):
             logger.error(FIND_MESSAGE_FROM_TIME_ERROR_MESSAGE)
 
 # 日記の画像を取得する（1枚目のみ取得する）
+
+
 def get_image_url_in_ctx(tem_context):
     try:
         if tem_context.message.attachments:
