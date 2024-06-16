@@ -38,7 +38,7 @@ def add_content(conn, content):
 def exeute_select_in_dairy_dababase(conn, TEM_QUERY, TEM_ARGUMENT=None):
     try:
         cursor = conn.cursor()
-        if TEM_ARGUMENT is None:
+        if TEM_ARGUMENT == None:
             cursor.execute(TEM_QUERY)
         else:
             cursor.execute(TEM_QUERY, TEM_ARGUMENT)

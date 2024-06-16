@@ -13,21 +13,6 @@ conn = dbapp.connect_database(DATABASE_FILE_LOCATION)
 dbapp.create_table(conn)
 logger.info(CONNECT_DATABASE_AND_TABLE)
 
-# 日記の画像を取得する（1枚目のみ取得する）
-def get_image_url_in_ctx(tem_context):
-    try:
-        if tem_context.message.attachments:
-            # 1枚目の画像のURLを取得
-            _image = tem_context.message.attachments[0]
-            _url = _image.url
-            return _url
-
-        # 画像がない場合、Noneを出力
-        else:
-            return None
-    except:
-        logger.error(DIARY_IMAGE_RETRIEVAL_ERROR_MESSAGE)
-
 # botの操作を記述する
 class DailyClient(commands.Cog):
     """
@@ -54,7 +39,7 @@ class DailyClient(commands.Cog):
             _message = ' '.join(args)
 
             # 登録する内容があるか確認する
-            if _message.isspace() or _message is "":
+            if _message.isspace() or _message == "":
                 await ctx.send("「/add I am happy」のように/addの後に英語の文章を書いてください。")
             else:
                 _id = ctx.message.id
@@ -94,7 +79,7 @@ class DailyClient(commands.Cog):
         try:
             find_letters = str(' '.join(args))
             _rows = dbapp.select_all_like_letters(conn, find_letters)
-            if bool(_rows) is False:
+            if bool(_rows) == False:
 
                 # find_lettersが含まれる日記がない場合
                 print(f"{find_letters}という文字を含んだ日記は見つかりません。")
@@ -118,7 +103,7 @@ class DailyClient(commands.Cog):
             _rows = dbapp.select_all_like_word(conn, find_word)
 
             # find_wordが含まれる日記がない場合
-            if bool(_rows) is False:
+            if bool(_rows) == False:
                 print(f"{find_word}という単語を含んだ日記は見つかりません。")
                 await ctx.send(f"{find_word}という単語を含んだ日記は見つかりません。")
             else:
@@ -147,7 +132,7 @@ class DailyClient(commands.Cog):
 
                 # find_dateで検索できる場合
                 _rows = dbapp.select_all_where_date(conn, find_date)
-                if bool(_rows) is False:
+                if bool(_rows) == False:
 
                     # find_dateに登録した日記がない場合
                     print(f"{find_date}に書いた日記はありません。")
@@ -213,9 +198,24 @@ class DailyClient(commands.Cog):
                             print(_row[0])
 
                 # 出力が空かどうか確認する
-                if bool(_print_count) is False:
+                if bool(_print_count) == False:
 
                     # 出力がない場合
                     await ctx.send(f"{find_time}の間に書いた日記はありません。")
         except:
             logger.error(FIND_MESSAGE_FROM_TIME_ERROR_MESSAGE)
+
+# 日記の画像を取得する（1枚目のみ取得する）
+def get_image_url_in_ctx(tem_context):
+    try:
+        if tem_context.message.attachments:
+            # 1枚目の画像のURLを取得
+            _image = tem_context.message.attachments[0]
+            _url = _image.url
+            return _url
+
+        # 画像がない場合、Noneを出力
+        else:
+            return None
+    except:
+        logger.error(DIARY_IMAGE_RETRIEVAL_ERROR_MESSAGE)
