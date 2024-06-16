@@ -84,6 +84,7 @@ class DailyClient(commands.Cog):
             _rows = dbapp.select_all_contents(conn)
             for _row in _rows:
                 print(_row)
+                await ctx.send(_row)
         except:
             logger.error(SHOW_CONTENTS_ERROR_MESSAGE)
 
