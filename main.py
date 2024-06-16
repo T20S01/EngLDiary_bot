@@ -1,7 +1,6 @@
 import discord
 from discord.ext import commands
-import logging
-import logging.handlers
+from logging import getLogger, handlers, DEBUG, INFO, Formatter
 
 # アクセストークンを読み込み
 from diary_bot import env
@@ -11,20 +10,21 @@ from diary_bot.diary import DailyClient
 from config.config import *
 
 # ログを残すための設定
-logger = logging.getLogger('discord')
-logger.setLevel(logging.DEBUG)
-logging.getLogger('discord.http').setLevel(logging.INFO)
-handler = logging.handlers.RotatingFileHandler(
-    filename='discord.log',
+logger = getLogger('discord')
+logger.setLevel(DEBUG)
+getLogger('discord.http').setLevel(INFO)
+handler = handlers.RotatingFileHandler(
+    filename=LOG_FILE_LOCATION,
     encoding='utf-8',
     maxBytes=32 * 1024 * 1024,  # 32 MiB
     backupCount=5,  # Rotate through 5 files
 )
 dt_fmt = '%Y-%m-%d %H:%M:%S'
-formatter = logging.Formatter(
+formatter = Formatter(
     '[{asctime}] [{levelname:<8}] {name}: {message}', dt_fmt, style='{')
 handler.setFormatter(formatter)
 logger.addHandler(handler)
+logger.propagate = False
 
 # インテントの設定
 intents = discord.Intents.all()
@@ -33,16 +33,23 @@ intents = discord.Intents.all()
 bot = commands.Bot(command_prefix='/', intents=intents)
 
 # 起動時に動作する処理
+
+
 @bot.event
 async def on_ready():
-    print(STARTUP_MESSAGE)
-    bot.add_cog(DailyClient(bot))
-    await bot.change_presence(status=discord.Status.online, activity=discord.Game(name=" diary, type /help "))
+    try:
+        logger.info(STARTUP_MESSAGE)
+        bot.add_cog(DailyClient(bot))
+        await bot.change_presence(status=discord.Status.online, activity=discord.Game(name=" diary, type /help "))
 
-    # 起動したらターミナルにログイン通知が表示される
-    print(f"{bot.user}がログインしました")
-    print(STARTUP_COMPLETE_MESSAGE)
-
+        # 起動したらターミナルにログイン通知が表示される
+        print(f"{bot.user}がログインしました")
+        logger.info(STARTUP_COMPLETE_MESSAGE)
+    except:
+        logger.error(BOT_CONFIG_ERROR_MESSAGE)
 
 # Botの起動とDiscordサーバーへの接続
-bot.run(env.BOT_TOKEN)
+try:
+    bot.run(env.BOT_TOKEN)
+except:
+    logger.error(BOT_RUNNING_ERROR_MESSAGE)
