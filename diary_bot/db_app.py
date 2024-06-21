@@ -7,45 +7,75 @@ logger = getLogger('discord')
 
 # SQLiteのdairy_databaseがなければ作成し、そのまま接続する
 def connect_database(db_file):
-    """ create a database connection to an SQLite database """
     conn = None
     try:
         conn = sqlite3.connect(db_file)
-        # print(sqlite3.sqlite_version)
     except sqlite3.Error as e:
         logger.error(e)
     return conn
 
 # SQLiteのdairy_databaseにdairy_tableがなければ作成し、そのまま接続する
 def create_table(conn):
+    cursor = conn.cursor()
+    cursor.execute('BEGIN')
     try:
-        cursor = conn.cursor()
         cursor.execute(CREATE_TABLE_IN_DIARY_DATABASE)
-    except sqlite3.Error as e:
-        logger.error(e)
-
-# SQLiteのdairy_databaseにcontentを追加する
-def add_content(conn, content):
-    try:
-        cursor = conn.cursor()
-        cursor.execute(INSERT_CONTENT, content)
         conn.commit()
     except sqlite3.Error as e:
         logger.error(e)
-    return cursor.lastrowid
+        conn.rollback()
+    finally:
+        cursor.close()
+
+# SQLiteのdairy_databaseにcontentを追加する
+def add_content(conn, content):
+    _cursor_lastrowid = None
+    cursor = conn.cursor()
+    cursor.execute('BEGIN')
+    try:
+        cursor.execute(INSERT_CONTENT, content)
+        conn.commit()
+        _cursor_lastrowid = cursor.lastrowid
+        return _cursor_lastrowid
+    except sqlite3.Error as e:
+        logger.error(e)
+        conn.rollback()
+    finally:
+        cursor.close()
+
+# 作成中
+
+# SQLiteのdairy_databaseにcontentを追加する
+# def delete_recent_content(conn):
+#     cursor = conn.cursor()
+#     cursor.execute('BEGIN')
+#     try:
+#         cursor = conn.cursor()
+#         cursor.execute('BEGIN')
+#     except sqlite3.Error as e:
+#         logger.error(e)
+#         conn.rollback()
+#     finally:
+#         cursor.close()
+
 
 # SQLiteでSELECT文を実行する基を作る
 def exeute_select_in_dairy_dababase(conn, TEM_QUERY, TEM_ARGUMENT=None):
+    cursor = conn.cursor()
+    _corsor_fetchall = None
     try:
-        cursor = conn.cursor()
         if TEM_ARGUMENT == None:
             cursor.execute(TEM_QUERY)
+            _corsor_fetchall = cursor.fetchall()
         else:
             cursor.execute(TEM_QUERY, TEM_ARGUMENT)
-        return cursor.fetchall()
+            _corsor_fetchall = cursor.fetchall()
+        return _corsor_fetchall
     except sqlite3.Error as e:
         logger.error(e)
-        return None
+        conn.rollback()
+    finally:
+        cursor.close()
 
 # SQLiteのdairy_databaseからすべての要素をselectする
 def select_all_contents(conn):
