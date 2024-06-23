@@ -1,3 +1,4 @@
+import time
 import discord
 from discord.ext import commands
 from logging import getLogger, handlers, DEBUG, INFO, Formatter
@@ -22,6 +23,7 @@ handler = handlers.RotatingFileHandler(
 dt_fmt = '%Y-%m-%d %H:%M:%S'
 formatter = Formatter(
     '[{asctime}] [{levelname:<8}] {name}: {message}', dt_fmt, style='{')
+formatter.converter = time.localtime(time.time() + 9*60*60)
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 logger.propagate = False

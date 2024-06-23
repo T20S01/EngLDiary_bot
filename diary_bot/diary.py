@@ -68,19 +68,37 @@ class DailyClient(commands.Cog):
             logger.error(DIARY_REGISTRATION_ERROR_MESSAGE)
 
     # これまでに登録された日記の要素をすべて表示する
-    @commands.command(name='showme_all_contents', description=HELP_SHOW_ALL_LONG, help=HELP_SHOW_ALL_SHORT)
+    @commands.command(name='delrc', description=HELP_SHOW_ALL_LONG, help=HELP_SHOW_ALL_SHORT)
+    async def delete_contents(self, ctx):
+        try:
+            _delete_row = dbapp.delete_recent_content(conn)
+
+            if _delete_row == None:
+                # チャンネルにはmessageのみ送信
+                await ctx.send("最新の日記は削除済みです")
+            else:
+                for _delete_content in _delete_row:
+                    print(_delete_content)
+                    # チャンネルにはmessageのみ送信
+                    await ctx.send(_row[3], "を削除しました")
+        except:
+            logger.error(SHOW_CONTENTS_ERROR_MESSAGE)
+
+    # これまでに登録された日記の要素をすべて表示する
+
+    @ commands.command(name='showme_all_contents', description=HELP_SHOW_ALL_LONG, help=HELP_SHOW_ALL_SHORT)
     async def show_contents(self, ctx):
         try:
             _rows = dbapp.select_all_contents(conn)
             for _row in _rows:
                 print(_row)
-                # チャンネルにはmessageのみ送信
-                await ctx.send(_row[2])
+            # チャンネルにはmessageのみ送信
+            await ctx.send(_row[2])
         except:
             logger.error(SHOW_CONTENTS_ERROR_MESSAGE)
 
     # 入力された文字が含まれる日記を探す
-    @commands.command(name='fl', description=HELP_FL_LONG, help=HELP_FL_SHORT)
+    @ commands.command(name='fl', description=HELP_FL_LONG, help=HELP_FL_SHORT)
     async def find_message_from_letters(self, ctx, *args):
         try:
             find_letters = str(' '.join(args))
@@ -102,7 +120,7 @@ class DailyClient(commands.Cog):
             logger.error(FIND_MESSAGE_FROM_LETTERS_ERROR_MESSAGE)
 
     # 入力された単語が含まれる日記を探す
-    @commands.command(name='fw', description=HELP_FW_LONG, help=HELP_FW_SHORT)
+    @ commands.command(name='fw', description=HELP_FW_LONG, help=HELP_FW_SHORT)
     async def find_message_from_word(self, ctx, *args):
         try:
             find_word = str(' '.join(args))
@@ -124,7 +142,7 @@ class DailyClient(commands.Cog):
             logger.error(FIND_MESSAGE_FROM_WORD_ERROR_MESSAGE)
 
     # 入力された日に登録された日記を探す
-    @commands.command(name='fd', description=HELP_FD_LONG, help=HELP_FD_SHORT)
+    @ commands.command(name='fd', description=HELP_FD_LONG, help=HELP_FD_SHORT)
     async def find_message_from_date(self, ctx, *args):
         try:
             find_date = str(' '.join(args))
@@ -155,7 +173,7 @@ class DailyClient(commands.Cog):
             logger.error(FIND_MESSAGE_FROM_DATE_ERROR_MESSAGE)
 
     # 入力された時間内に登録された日記を探す
-    @commands.command(name='ft', description=HELP_FT_LONG, help=HELP_FT_SHORT)
+    @ commands.command(name='ft', description=HELP_FT_LONG, help=HELP_FT_SHORT)
     async def find_message_from_time(self, ctx, *args):
         try:
             find_time = str(' '.join(args))
