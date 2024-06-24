@@ -99,7 +99,7 @@ def delete_recent_content(conn):
         cursor = conn.cursor()
         cursor.execute(DELETE_RECENT_CONTENT, ("".join(last_insert_list[1]), ))
         conn.commit()
-        diary_logger.info("DELETE")
+        diary_logger.info("DELETE," + ",".join(last_insert_list))
         return last_insert_list
     except sqlite3.Error as e:
         logger.error(e)

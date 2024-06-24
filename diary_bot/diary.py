@@ -69,7 +69,7 @@ class DailyClient(commands.Cog):
             logger.error(DIARY_REGISTRATION_ERROR_MESSAGE)
 
     # 一番最近追加された日記を削除する
-    @commands.command(name='delrc', description=HELP_SHOW_ALL_LONG, help=HELP_SHOW_ALL_SHORT)
+    @commands.command(name='delrc', description=HELP_DELRC_LONG, help=HELP_DELRC_SHORT)
     async def delete_contents(self, ctx):
         try:
             _delete_row = dbapp.delete_recent_content(conn)
@@ -84,7 +84,7 @@ class DailyClient(commands.Cog):
                 await ctx.send(str(_delete_row[3]) + "を削除しました")
         except Exception as e:
             print("エラーが発生しました：", e)
-            logger.error("deleteでerrorが発生しました")
+            logger.error(DIARY_DELETE_ERROR_MESSAGE)
 
     # これまでに登録された日記の要素をすべて表示する
 
