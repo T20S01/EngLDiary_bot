@@ -17,6 +17,11 @@
 /add <input sentence>
 ```
 ![add image](https://i.imgur.com/3Eny846.png)
+### /delrc 一番最近登録した日記をデータベースから削除する
+```
+/delrc
+```
+画像準備中
 ### /showme_all_contents データベースのすべての日記エントリを表示する
 ```
 /showme_all_contents
