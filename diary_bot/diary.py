@@ -64,10 +64,11 @@ class DailyClient(commands.Cog):
                 content_id = dbapp.add_content(conn, content)
                 print(f'Created a content with the id {content_id}')
                 await ctx.send("保存しました")
-        except:
+        except Exception as e:
+            print("エラーが発生しました：", e)
             logger.error(DIARY_REGISTRATION_ERROR_MESSAGE)
 
-    # これまでに登録された日記の要素をすべて表示する
+    # 一番最近追加された日記を削除する
     @commands.command(name='delrc', description=HELP_SHOW_ALL_LONG, help=HELP_SHOW_ALL_SHORT)
     async def delete_contents(self, ctx):
         try:
@@ -79,10 +80,11 @@ class DailyClient(commands.Cog):
             else:
                 for _delete_content in _delete_row:
                     print(_delete_content)
-                    # チャンネルにはmessageのみ送信
-                    await ctx.send(_row[3], "を削除しました")
-        except:
-            logger.error(SHOW_CONTENTS_ERROR_MESSAGE)
+                # チャンネルにはmessageのみ送信
+                await ctx.send(str(_delete_row[3]) + "を削除しました")
+        except Exception as e:
+            print("エラーが発生しました：", e)
+            logger.error("deleteでerrorが発生しました")
 
     # これまでに登録された日記の要素をすべて表示する
 
@@ -92,9 +94,10 @@ class DailyClient(commands.Cog):
             _rows = dbapp.select_all_contents(conn)
             for _row in _rows:
                 print(_row)
-            # チャンネルにはmessageのみ送信
-            await ctx.send(_row[2])
-        except:
+                # チャンネルにはmessageのみ送信
+                await ctx.send(_row[2])
+        except Exception as e:
+            print("エラーが発生しました：", e)
             logger.error(SHOW_CONTENTS_ERROR_MESSAGE)
 
     # 入力された文字が含まれる日記を探す
@@ -116,7 +119,8 @@ class DailyClient(commands.Cog):
                     # messageのみ取得して表示
                     print(_row[2])
                     await ctx.send(_row[2])
-        except:
+        except Exception as e:
+            print("エラーが発生しました：", e)
             logger.error(FIND_MESSAGE_FROM_LETTERS_ERROR_MESSAGE)
 
     # 入力された単語が含まれる日記を探す
@@ -138,7 +142,8 @@ class DailyClient(commands.Cog):
                     # messageのみ取得して表示
                     print(_row[2])
                     await ctx.send(_row[2])
-        except:
+        except Exception as e:
+            print("エラーが発生しました：", e)
             logger.error(FIND_MESSAGE_FROM_WORD_ERROR_MESSAGE)
 
     # 入力された日に登録された日記を探す
@@ -169,7 +174,8 @@ class DailyClient(commands.Cog):
                         # messageのみ取得して表示
                         print(_row[2])
                         await ctx.send(_row[2])
-        except:
+        except Exception as e:
+            print("エラーが発生しました：", e)
             logger.error(FIND_MESSAGE_FROM_DATE_ERROR_MESSAGE)
 
     # 入力された時間内に登録された日記を探す
@@ -226,7 +232,8 @@ class DailyClient(commands.Cog):
 
                     # 出力がない場合
                     await ctx.send(f"{find_time}の間に書いた日記はありません。")
-        except:
+        except Exception as e:
+            print("エラーが発生しました：", e)
             logger.error(FIND_MESSAGE_FROM_TIME_ERROR_MESSAGE)
 
 # 日記の画像を取得する（1枚目のみ取得する）
@@ -243,5 +250,6 @@ def get_image_url_in_ctx(tem_context):
         # 画像がない場合、Noneを出力
         else:
             return None
-    except:
+    except Exception as e:
+        print("エラーが発生しました：", e)
         logger.error(DIARY_IMAGE_RETRIEVAL_ERROR_MESSAGE)

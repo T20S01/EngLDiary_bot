@@ -23,7 +23,10 @@ handler = handlers.RotatingFileHandler(
 dt_fmt = '%Y-%m-%d %H:%M:%S'
 formatter = Formatter(
     '[{asctime}] [{levelname:<8}] {name}: {message}', dt_fmt, style='{')
-formatter.converter = time.localtime(time.time() + 9*60*60)
+formatter.formatTime = lambda record, datefmt=None: time.strftime(
+    datefmt or formatter.default_time_format, time.localtime(
+        record.created + 9*60*60)
+)
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 logger.propagate = False

@@ -1,4 +1,4 @@
-import os
+import time
 from logging import getLogger, handlers, DEBUG, INFO, Formatter
 from config.sql_statements import *
 import sqlite3
@@ -16,7 +16,11 @@ handler = handlers.RotatingFileHandler(
 dt_fmt = '%Y-%m-%d %H:%M:%S'
 formatter = Formatter(
     '[{asctime}] [{levelname:<8}] {name}: {message}', dt_fmt, style='{')
-formatter.converter = time.localtime(time.time() + 9*60*60)
+# formatTimeメソッドを上書き
+formatter.formatTime = lambda record, datefmt=None: time.strftime(
+    datefmt or formatter.default_time_format, time.localtime(
+        record.created + 9*60*60)
+)
 handler.setFormatter(formatter)
 diary_logger.addHandler(handler)
 diary_logger.propagate = False
@@ -93,8 +97,8 @@ def delete_recent_content(conn):
         # "INSERT"以降の文字列を取得する
         last_insert_list = last_insert[insert_pos:].split(",")
         cursor = conn.cursor()
-        print(last_insert_list[1])
-        cursor.execute(DELETE_RECENT_CONTENT, "".join(last_insert_list[1]))
+        cursor.execute(DELETE_RECENT_CONTENT, ("".join(last_insert_list[1]), ))
+        conn.commit()
         diary_logger.info("DELETE")
         return last_insert_list
     except sqlite3.Error as e:
