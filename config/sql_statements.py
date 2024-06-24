@@ -1,3 +1,5 @@
+SQL_LOG_FILE_LOCATION =  "./database/db_sql.log"
+
 CREATE_TABLE_IN_DIARY_DATABASE = """
     CREATE TABLE IF NOT EXISTS contents (
     id INTEGER PRIMARY KEY, 
@@ -11,6 +13,8 @@ CREATE_TABLE_IN_DIARY_DATABASE = """
     """
 
 INSERT_CONTENT = "INSERT INTO contents(id,user,message,create_at,channel,guild,image_url)VALUES(?,?,?,?,?,?,?)"
+DELETE_RECENT_CONTENT = "DELETE FROM contents WHERE id = ?"
+
 
 SELECT_ALL_CONTENT = "SELECT * FROM contents"
 SELECT_ALL_MESSAGE = "SELECT message FROM contents"
